@@ -78,6 +78,10 @@ int main(int argc, char *argv[]) {
 
 qjson-c has no dependency with other libraries. 
 
+It is also possible to build a library and `qjson` program binary with `make`. Call `make test` 
+to test the program, and `make clean` to remove all built files, including the libraries and 
+the program. 
+
 ### qjson command line application
 
 A qjson command line may be build with the provided main.c file.
