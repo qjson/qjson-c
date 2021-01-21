@@ -24,9 +24,9 @@ typedef unsigned char byte;
 
 // pos is a position in the input string.
 typedef struct {
-    int b; // index of the current char in the input string
-    int s; // index of the first char of the line in the input string
-    int l; // line number starting at 0
+	int b; // index of the current char in the input string
+	int s; // index of the first char of the line in the input string
+	int l; // line number starting at 0
 } pos_t;
 
 enum tokenTag_t {
@@ -64,39 +64,39 @@ enum tokenTag_t {
 
 // slice_t is a slice of characters. 
 typedef struct {
-    const char *p; // pointer to the first char of the slice
-    int         l; // byte length of the slice
+	const char *p; // pointer to the first char of the slice
+	int         l; // byte length of the slice
 } slice_t;
 
 // token_t is a token parsed by the tokenizer.
 typedef struct {
-    enum tokenTag_t tag; // token tag of the token
-    pos_t           pos; // position of the first byte of the token
-    slice_t         val; // token value 
+	enum tokenTag_t tag; // token tag of the token
+	pos_t           pos; // position of the first byte of the token
+	slice_t         val; // token value 
 } token_t;
 
 // outBuf_t is an output buffer that will grow its storage space as needed.
 // Data is written with outBufByte() or outBufString().
 typedef struct {
-    char  *buf; // data storage allocated with malloc
-    int    len; // number of data bytes in storage
-    int    cap; // maximum capacity of storage.
+	char  *buf; // data storage allocated with malloc
+	int    len; // number of data bytes in storage
+	int    cap; // maximum capacity of storage.
 } outBuf_t;
 
 // engine_t is the conversion engine.
 typedef struct {
-    const char *in;     // input string
-    slice_t     p;      // text left to parse
-    pos_t       pos;    // position of text left to parse
-    outBuf_t    out;    // output buffer
-    token_t     tk;     // current token
-    int         depth;  // depth of [] and {}
+	const char *in;     // input string
+	slice_t     p;      // text left to parse
+	pos_t       pos;    // position of text left to parse
+	outBuf_t    out;    // output buffer
+	token_t     tk;     // current token
+	int         depth;  // depth of [] and {}
 } engine_t;
 
 // error_t is an error message with associated pos.
 typedef struct {
-    pos_t       pos; // the position of the error
-    const char *err; // the error message (one of the ErrXXX string)
+	pos_t       pos; // the position of the error
+	const char *err; // the error message (one of the ErrXXX string)
 } error_t;
 
 
@@ -238,44 +238,44 @@ error_t *newError(pos_t pos, const char* err) {
 
 // whitespace return the byte length of the white space in front of p. 
 int whitespace(slice_t p) {
-    if (p.l == 0)
-        return 0; 
-    if (p.p[0] == ' ' || p.p[0] == '\t')
-        return 1;
-    if (p.l > 1 && (byte)p.p[0] == 0xC2 && (byte)p.p[1] == 0xA0)
-        return 2;
-    return 0;
+	if (p.l == 0)
+		return 0; 
+	if (p.p[0] == ' ' || p.p[0] == '\t')
+		return 1;
+	if (p.l > 1 && (byte)p.p[0] == 0xC2 && (byte)p.p[1] == 0xA0)
+		return 2;
+	return 0;
 }
 
 // newline return the byte length of the newline in front of p.
 int newline(slice_t p) {
-    if (p.l == 0)
-        return 0; 
-    if (p.p[0] == '\n')
-        return 1;
-    if (p.l > 1 && p.p[0] == '\r' && p.p[1] == '\n')
-        return 2;
-    return 0;
+	if (p.l == 0)
+		return 0; 
+	if (p.p[0] == '\n')
+		return 1;
+	if (p.l > 1 && p.p[0] == '\r' && p.p[1] == '\n')
+		return 2;
+	return 0;
 }
 
 // popBytes removes n bytes from the front of p. Use popNewline
 // insteal when e.p starts with a newline.
 void popBytes(engine_t *e, int n) {
-    e->p.p += n;
-    e->p.l -= n;
-    e->pos.b += n;
+	e->p.p += n;
+	e->p.l -= n;
+	e->pos.b += n;
 }
 
 // popNewline returns false if there is no newline in front of p, 
 // otherwise it return true after removing the newline.
 bool popNewline(engine_t *e) {
-    int n = newline(e->p);
-    if (n == 0)
-        return false;
-    popBytes(e, n);
-    e->pos.s = e->pos.b;
-    e->pos.l++;
-    return true;
+	int n = newline(e->p);
+	if (n == 0)
+		return false;
+	popBytes(e, n);
+	e->pos.s = e->pos.b;
+	e->pos.l++;
+	return true;
 }
 
 const byte s0 = 0x00; // invalid character (e.g. control characters)
@@ -325,7 +325,7 @@ const byte utf8Range[16] = {
 // charX requires that x == s0 || x >= s2.
 error_t* qcharX(engine_t *e, byte x, int* nOut) {
  	if (x == s0)
-        return newError(e->pos, ErrInvalidChar);
+		return newError(e->pos, ErrInvalidChar);
 	
 	int n = (int)(x & 0xF);
 	if (n > e->p.l) {
@@ -346,7 +346,7 @@ error_t* qcharX(engine_t *e, byte x, int* nOut) {
 			}
 		}
 	}
-    *nOut = n;
+	*nOut = n;
 	return NULL;
 }
 
@@ -354,14 +354,14 @@ error_t* qcharX(engine_t *e, byte x, int* nOut) {
 // otherwise it returns 0 and the error which can be ErrEndOfInput,
 // ErrInvalidChar or ErrTruncatedChar. The char is not popped.
 error_t* qchar(engine_t *e, int* n) {
-    *n = 0;
+	*n = 0;
 	if (e->p.l == 0) {
-        return NULL;
+		return NULL;
 	}
 	byte x = utf8Table[(byte)e->p.p[0]];
 	if (x == s1) {
-        *n = 1;
-        return NULL;
+		*n = 1;
+		return NULL;
 	}
 	// Called by char for mid-stack inlining.
 	return qcharX(e, x, n);
@@ -370,32 +370,32 @@ error_t* qchar(engine_t *e, int* n) {
 // column return the number of utf8 chars in p. It requires that p contains
 // a sequence of valid utf8 encoded chars.
 int column(slice_t p) {
-    assert(p.p != NULL);
-    assert(p.l >= 0);
-    int cnt = 0;
-    while (p.l > 0) {
-        int n = (int)(utf8Table[(byte)p.p[0]] & 0xF);
+	assert(p.p != NULL);
+	assert(p.l >= 0);
+	int cnt = 0;
+	while (p.l > 0) {
+		int n = (int)(utf8Table[(byte)p.p[0]] & 0xF);
 		if (n == 0 || n > p.l)
 			break;
 		p.p += n;
-        p.l -= n;
+		p.l -= n;
 		cnt++;
-    }
-    return cnt;
+	}
+	return cnt;
 }
 
 // skipRestOfLine pops all characters until an error occurs, a newline is met, or the
 // end of input is met. In the later case no error is returned.
 error_t* skipRestOfLine(engine_t *e) {
-    for (;;) {
+	for (;;) {
 		if (popNewline(e) || e->p.l == 0) {
 			return NULL;
 		}
-        int n; 
-        error_t *err = qchar(e, &n);
-        if (err != NULL) {
-            return err;
-        }
+		int n; 
+		error_t *err = qchar(e, &n);
+		if (err != NULL) {
+			return err;
+		}
 		popBytes(e, n);
 	}
 }
@@ -403,14 +403,14 @@ error_t* skipRestOfLine(engine_t *e) {
 // skipLineComment return true and nil error if it successfully skipped #... or //... comments
 // including the newline or the end of input is reached. Otherwise return false with the error.
 error_t* skipLineComment(engine_t *e, bool *out) {
-    *out = false;
-    if (e->p.l == 0)
+	*out = false;
+	if (e->p.l == 0)
 		return NULL;
 	if (e->p.p[0] == '#' || (e->p.p[0] == '/' && e->p.l >= 2 && e->p.p[1] == '/')) {
-        error_t* err = skipRestOfLine(e);
-        if (err == NULL)
-            *out = true;
-        return err;
+		error_t* err = skipRestOfLine(e);
+		if (err == NULL)
+			*out = true;
+		return err;
 	}
 	return NULL;
 }
@@ -419,7 +419,7 @@ error_t* skipLineComment(engine_t *e, bool *out) {
 // multiline comment. Return true and nil if successfully skipped a /*...*/ comment.
 // Otherwise it returns false and an error.
 error_t* skipMultilineComment(engine_t *e, bool *out) {
-    *out = false;
+	*out = false;
 	if (e->p.l == 0 || e->p.p[0] != '/' || e->p.l < 2 || e->p.p[1] != '*') {
 		return NULL;
 	}
@@ -430,9 +430,9 @@ error_t* skipMultilineComment(engine_t *e, bool *out) {
 			return newError(startPos, ErrUnclosedSlashStarComment);
 		}
 		if (e->p.p[0] == '*' && e->p.l >= 2 && e->p.p[1] == '/') {
-            popBytes(e, 2);
-            *out = true;
-            return NULL;
+			popBytes(e, 2);
+			*out = true;
+			return NULL;
 		}
 		if (popNewline(e)) {
 			continue;
@@ -441,12 +441,12 @@ error_t* skipMultilineComment(engine_t *e, bool *out) {
 			popBytes(e, 1);
 			continue;
 		}
-        int n;
+		int n;
 		error_t* err = qchar(e, &n);
 		if (err != NULL) {
 			return err;
 		}
-        popBytes(e, n);
+		popBytes(e, n);
 	}
 }
 
@@ -461,8 +461,8 @@ void skipWhitespaces(engine_t *e) {
 // if there is no double quoted string in front of tk.p. Requires tk is not
 // done an dk.p is not empty.
 error_t* doubleQuotedString(engine_t *e, slice_t *out) {
-    out->p = NULL;
-    out->l = 0;
+	out->p = NULL;
+	out->l = 0;
 	pos_t startPos = e->pos;
 	if (e->p.l == 0 || e->p.p[0] != '"') {
 		return NULL;
@@ -470,7 +470,7 @@ error_t* doubleQuotedString(engine_t *e, slice_t *out) {
 	popBytes(e, 1);
 	for (;;) {
 		if (e->p.l == 0) {
-            return newError(startPos, ErrUnclosedDoubleQuoteString);
+			return newError(startPos, ErrUnclosedDoubleQuoteString);
 		}
 		if (e->p.p[0] == '\\' && e->p.l > 1 && e->p.p[1] == '"') {
 			popBytes(e, 2);
@@ -478,15 +478,15 @@ error_t* doubleQuotedString(engine_t *e, slice_t *out) {
 		}
 		if (e->p.p[0] == '"') {
 			popBytes(e, 1);
-            out->p = e->in+startPos.b;
-            out->l = e->pos.b - startPos.b;
+			out->p = e->in+startPos.b;
+			out->l = e->pos.b - startPos.b;
 			return NULL;
 		}
 		if (newline(e->p) != 0) {
 			return newError(startPos, ErrNewlineInDoubleQuoteString);
 		}
-        int n;
-        error_t *err = qchar(e, &n);
+		int n;
+		error_t *err = qchar(e, &n);
 		if (err != NULL) {
 			return err;
 		}
@@ -498,8 +498,8 @@ error_t* doubleQuotedString(engine_t *e, slice_t *out) {
 // if there is no single quoted string in front of tk.p. Requires tk is not
 // done an dk.p is not empty.
 error_t* singleQuotedString(engine_t *e, slice_t *out) {
-    out->p = NULL;
-    out->l = 0;
+	out->p = NULL;
+	out->l = 0;
 	pos_t startPos = e->pos;
 	if (e->p.l == 0 || e->p.p[0] != '\'') {
 		return NULL;
@@ -515,15 +515,15 @@ error_t* singleQuotedString(engine_t *e, slice_t *out) {
 		}
 		if (e->p.p[0] == '\'') {
 			popBytes(e, 1);
-            out->p = e->in+startPos.b;
-            out->l = e->pos.b - startPos.b;
+			out->p = e->in+startPos.b;
+			out->l = e->pos.b - startPos.b;
 			return NULL;
 		}
 		if (newline(e->p) != 0) {
 			return newError(startPos, ErrNewlineInSingleQuoteString);
 		}
-        int n;
-        error_t *err = qchar(e, &n);
+		int n;
+		error_t *err = qchar(e, &n);
 		if (err != NULL) {
 			return err;
 		}
@@ -562,8 +562,8 @@ error_t* quotelessString(engine_t* e, slice_t *out) {
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 60
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, // 70 { }
 	};
-    out->p = NULL;
-    out->l = 0;
+	out->p = NULL;
+	out->l = 0;
 	pos_t startPos = e->pos;
 	int endIdx = startPos.b;
 	for (;;) {
@@ -585,8 +585,8 @@ error_t* quotelessString(engine_t* e, slice_t *out) {
 				continue;
 			}
 		}
-        int n;
-        error_t *err = qchar(e, &n);
+		int n;
+		error_t *err = qchar(e, &n);
 		if (err != NULL) {
 			return err;
 		}
@@ -596,8 +596,8 @@ error_t* quotelessString(engine_t* e, slice_t *out) {
 	if (startPos.b == endIdx) {
 		return NULL;
 	}
-    out->p = e->in + startPos.b;
-    out->l = endIdx - startPos.b;
+	out->p = e->in + startPos.b;
+	out->l = endIdx - startPos.b;
 	return NULL;
 }
 
@@ -630,10 +630,10 @@ error_t* skipSpaces(engine_t *e) {
 	bool ok;
 	while (err == NULL && e->p.l > 0) {
 		skipWhitespaces(e);
-        err = skipLineComment(e, &ok);
+		err = skipLineComment(e, &ok);
 		if (ok || err != NULL)
 			continue;
-        err = skipMultilineComment(e, &ok);
+		err = skipMultilineComment(e, &ok);
 		if (ok || err != NULL)
 			continue;
 		if (!popNewline(e))
@@ -671,12 +671,12 @@ int newlineSpecifier(slice_t p) {
 int getMargin(slice_t p) {
 	int b = 0;
 	while (p.l > 0) {
-        int n = whitespace(p);
-        if (n == 0)
-            break;
-        p.p += n;
-        p.l -= n;
-        b += n;
+		int n = whitespace(p);
+		if (n == 0)
+			break;
+		p.p += n;
+		p.l -= n;
+		b += n;
 	}
 	return b;
 }
@@ -686,8 +686,8 @@ int getMargin(slice_t p) {
 // pops it from e.p. Otherwise it return nil. It returns a non nil slice of
 // lenght 0 if an error occured.
 error_t* multilineString(engine_t *e, slice_t *out) {
-    out->p = NULL;
-    out->l = 0;
+	out->p = NULL;
+	out->l = 0;
 	if (e->p.l == 0 || e->p.p[0] != '`') {
 		return NULL;
 	}
@@ -701,14 +701,14 @@ error_t* multilineString(engine_t *e, slice_t *out) {
 	skipWhitespaces(e);
 	if (e->p.l == 0)
 		return newError(startPos, ErrMissingNewlineSpecifier);
-    int n = newlineSpecifier(e->p);
+	int n = newlineSpecifier(e->p);
 	if (n == 0) 
-        return newError(startPos, ErrInvalidNewlineSpecifier);
-    popBytes(e, n);
+		return newError(startPos, ErrInvalidNewlineSpecifier);
+	popBytes(e, n);
 	skipWhitespaces(e);
 	if (!popNewline(e)) {
-        bool ok;
-        error_t *err = skipLineComment(e, &ok); 
+		bool ok;
+		error_t *err = skipLineComment(e, &ok); 
 		if (err != NULL)
 			return err;
 		if (!ok) {
@@ -737,14 +737,14 @@ error_t* multilineString(engine_t *e, slice_t *out) {
 		if (e->p.p[0] == '`') {
 			popBytes(e, 1);
 			if (e->p.l == 0 || e->p.p[0] != '\\') {
-                out->p = e->in+startPos.s;
-                out->l = e->pos.b-startPos.s;
+				out->p = e->in+startPos.s;
+				out->l = e->pos.b-startPos.s;
 				return NULL; // we reached the end of the multiline
 			}
 			continue;
 		}
-        int n;
-        error_t *err = qchar(e, &n);
+		int n;
+		error_t *err = qchar(e, &n);
 		if (err != NULL) {
 			return err;
 		}
@@ -760,64 +760,64 @@ error_t* multilineString(engine_t *e, slice_t *out) {
 void nextToken(engine_t *e) {
 	if (e->tk.tag == tagError)
 		return;
-    error_t *err = skipSpaces(e);
-    if (err != NULL) {
-        e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
+	error_t *err = skipSpaces(e);
+	if (err != NULL) {
+		e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
 		free(err);
-        return;
-    }
-	pos_t tokenPos = e->pos;
-    if (e->p.l == 0) {
-        e->tk = (token_t){tagError, e->pos, (slice_t){ErrEndOfInput, strlen(ErrEndOfInput)}};
-        return;
-    }
-	enum tokenTag_t tag = delimiter(e); 
-    if (tag != tagUnknown) {
-		e->tk = (token_t){tag, tokenPos, (slice_t){NULL, 0}};
-        return;
+		return;
 	}
-    slice_t s;
-    err = doubleQuotedString(e, &s);
-    if (err != NULL) {
-        e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
+	pos_t tokenPos = e->pos;
+	if (e->p.l == 0) {
+		e->tk = (token_t){tagError, e->pos, (slice_t){ErrEndOfInput, strlen(ErrEndOfInput)}};
+		return;
+	}
+	enum tokenTag_t tag = delimiter(e); 
+	if (tag != tagUnknown) {
+		e->tk = (token_t){tag, tokenPos, (slice_t){NULL, 0}};
+		return;
+	}
+	slice_t s;
+	err = doubleQuotedString(e, &s);
+	if (err != NULL) {
+		e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
 		free(err);
-        return;
-    }
-    if (s.p != NULL) {
-        e->tk = (token_t){tagDoubleQuotedString, tokenPos, s};
-        return;
-    }
-    err = singleQuotedString(e, &s);
-    if (err != NULL) {
-        e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
+		return;
+	}
+	if (s.p != NULL) {
+		e->tk = (token_t){tagDoubleQuotedString, tokenPos, s};
+		return;
+	}
+	err = singleQuotedString(e, &s);
+	if (err != NULL) {
+		e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
 		free(err);
-        return;
-    }
-    if (s.p != NULL) {
-        e->tk = (token_t){tagSingleQuotedString, tokenPos, s};
-        return;
-    }
-    err = multilineString(e, &s);
-    if (err != NULL) {
-        e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
+		return;
+	}
+	if (s.p != NULL) {
+		e->tk = (token_t){tagSingleQuotedString, tokenPos, s};
+		return;
+	}
+	err = multilineString(e, &s);
+	if (err != NULL) {
+		e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
 		free(err);
-        return;
-    }
-    if (s.p != NULL) {
-        e->tk = (token_t){tagMultilineString, tokenPos, s};
-        return;
-    }
-    err = quotelessString(e, &s);
-    if (err != NULL) {
-        e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
+		return;
+	}
+	if (s.p != NULL) {
+		e->tk = (token_t){tagMultilineString, tokenPos, s};
+		return;
+	}
+	err = quotelessString(e, &s);
+	if (err != NULL) {
+		e->tk = (token_t){tagError, err->pos, (slice_t){err->err, strlen(err->err)}};
 		free(err);
-        return;
-    }
-    if (s.p != NULL) {
-        e->tk = (token_t){tagQuotelessString, tokenPos, s};
-        return;
-    }
-    assert(false); // we should never reach this line
+		return;
+	}
+	if (s.p != NULL) {
+		e->tk = (token_t){tagQuotelessString, tokenPos, s};
+		return;
+	}
+	assert(false); // we should never reach this line
 }
 
 
@@ -828,15 +828,15 @@ void nextToken(engine_t *e) {
 // done return true when an error is met. The error may be that the end of 
 // input is reached.
 bool done(engine_t *e) {
-    return e->tk.tag == tagError;
+	return e->tk.tag == tagError;
 }
 
 void setErrorAndPos(engine_t *e, const char *err, pos_t pos) {
-    e->tk = (token_t){tagError, pos, (slice_t){err, strlen(err)}};
+	e->tk = (token_t){tagError, pos, (slice_t){err, strlen(err)}};
 }
 
 void setError(engine_t *e, const char *err) {
-    setErrorAndPos(e, err, e->pos);
+	setErrorAndPos(e, err, e->pos);
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------------------
@@ -844,56 +844,56 @@ void setError(engine_t *e, const char *err) {
 // ----------------------------------------------------------------------------------------------------------------------------------------
 
 void outputInit(engine_t *e) {
-    e->out.buf = NULL;
-    e->out.len = e->out.cap = 0;
+	e->out.buf = NULL;
+	e->out.len = e->out.cap = 0;
 }
 
 // outputGrow grows the output buffer without modifying len.
 void outputGrow(engine_t *e) {
-    if (e->out.buf == NULL) {
-        e->out.cap = 1024;
-        e->out.buf = malloc(e->out.cap);
-        e->out.len = 0;
-    }
-    int newCap = e->out.cap*2;
-    char *tmp = malloc(newCap);
-    memcpy(tmp, e->out.buf, e->out.cap);
-    free(e->out.buf);
-    e->out.buf = tmp;
-    e->out.cap = newCap;
+	if (e->out.buf == NULL) {
+		e->out.cap = 1024;
+		e->out.buf = malloc(e->out.cap);
+		e->out.len = 0;
+	}
+	int newCap = e->out.cap*2;
+	char *tmp = malloc(newCap);
+	memcpy(tmp, e->out.buf, e->out.cap);
+	free(e->out.buf);
+	e->out.buf = tmp;
+	e->out.cap = newCap;
 }
 
 // outBufByte appends a byte to the output buffer.
 void outputByte(engine_t *e, char c) {
-    assert(e->out.len <= e->out.cap);
-    if (e->out.len == e->out.cap)
-        outputGrow(e);
-    e->out.buf[e->out.len++] = c;
+	assert(e->out.len <= e->out.cap);
+	if (e->out.len == e->out.cap)
+		outputGrow(e);
+	e->out.buf[e->out.len++] = c;
 }
 
 // outBufString appends a string to the output buffer.
 void outputString(engine_t *e, const char *s) {
-    assert(e->out.len <=e->out.cap);
-    int l = strlen(s);
-    while (e->out.len + l > e->out.cap)
-        outputGrow(e);
-    memcpy(e->out.buf+e->out.len, s, l);
-    e->out.len += l;
+	assert(e->out.len <=e->out.cap);
+	int l = strlen(s);
+	while (e->out.len + l > e->out.cap)
+		outputGrow(e);
+	memcpy(e->out.buf+e->out.len, s, l);
+	e->out.len += l;
 }
 
 // outBufGet returns the output buffer content. 
 // On return, the output buffer is empty.
 char* outputGet(engine_t *e) {
-    char *tmp = realloc(e->out.buf, e->out.len);
-    e->out.buf = NULL;
-    e->out.len = 0;
-    e->out.cap = 0;
-    return tmp;
+	char *tmp = realloc(e->out.buf, e->out.len);
+	e->out.buf = NULL;
+	e->out.len = 0;
+	e->out.cap = 0;
+	return tmp;
 }
 
 // outBufReset reset the output buffer to an empty state.
 void outputReset(engine_t *e) {
-    e->out.len = 0;
+	e->out.len = 0;
 }
 
 
@@ -902,16 +902,16 @@ bool isHexDigit(byte v);
 void outputDoubleQuotedString(engine_t *e) {
 	char c;
 	slice_t str = e->tk.val;
-    outputByte(e, '"');
+	outputByte(e, '"');
 	for (int i = 1; i < str.l-1; i++) {
 		switch (str.p[i]) {
 		case '/':
 			if (str.p[i-1] == '<')
-                outputByte(e, '\\');
-            break;
+				outputByte(e, '\\');
+			break;
 		case '\t':
-            outputByte(e, '\\');
-            outputByte(e, 't');
+			outputByte(e, '\\');
+			outputByte(e, 't');
 			continue;
 		case '\\':
 			c = str.p[i+1];
@@ -920,24 +920,24 @@ void outputDoubleQuotedString(engine_t *e) {
 				setErrorAndPos(e, ErrInvalidEscapeSequence, (pos_t){e->tk.pos.b+i, e->tk.pos.s, e->tk.pos.l});
 				return;
 			}
-            break;
+			break;
 		}
-        outputByte(e, str.p[i]);
+		outputByte(e, str.p[i]);
 	}
-    outputByte(e, '"');
+	outputByte(e, '"');
 }
 
 void outputSingleQuotedString(engine_t *e) {
 	char c;
 	slice_t str = e->tk.val;
-    outputByte(e, '"');
+	outputByte(e, '"');
 	for (int i = 1; i < str.l-1; i++) {
 		switch (str.p[i]) {
 		case '/':
 			if (str.p[i-1] == '<') {
 				outputByte(e, '\\');
 			}
-            break;
+			break;
 		case '\t':
 			outputByte(e, '\\');
 			outputByte(e, 't');
@@ -951,10 +951,10 @@ void outputSingleQuotedString(engine_t *e) {
 			}
 			if (c == '\'')
 				continue;
-            break;
+			break;
 		case '"':
 			outputByte(e, '\\');
-            break;
+			break;
 		}
 		outputByte(e, str.p[i]);
 	}
@@ -968,7 +968,7 @@ void outputQuotelessString(engine_t *e) {
 		switch (str.p[i]) {
 		case '"':
 			outputByte(e, '\\');
-            break;
+			break;
 		case '\t':
 			outputByte(e, '\\');
 			outputByte(e, 't');
@@ -977,10 +977,10 @@ void outputQuotelessString(engine_t *e) {
 			if (i > 0 && str.p[i-1] == '<') {
 				outputByte(e, '\\');
 			}
-            break;
+			break;
 		case '\\':
 			outputByte(e, '\\');
-            break;
+			break;
 		}
 		outputByte(e, str.p[i]);
 	}
@@ -993,90 +993,90 @@ void outputMultilineString(engine_t *e) {
 	while (str.p[p] != '`')
 		p++;
 	slice_t margin = str;
-    margin.l = p;
+	margin.l = p;
 	str.p = str.p+p+1;
-    str.l = str.l-p-1;
+	str.l = str.l-p-1;
 	for (int n = whitespace(str); n > 0; n = whitespace(str)) {
-        str.p = str.p+n;
-        str.l = str.l-n;
+		str.p = str.p+n;
+		str.l = str.l-n;
 	}
 	str.p++;
-    str.l--;
+	str.l--;
 	const char* nl;
 	if (str.p[0] == 'n') {
-        nl = "\\n";
+		nl = "\\n";
 		str.p++;
-        str.l--;
+		str.l--;
 	} else {
 		nl = "\\r\\n";
-        str.p += 3;
-        str.l -= 3;
+		str.p += 3;
+		str.l -= 3;
 	}
 	while (str.p[0] != '\n') {
 		str.p++;
-        str.l--;
+		str.l--;
 	}
 	// skip \n with margin of first line, and drop closing `
 	str.p = str.p+1+margin.l;
-    str.l = str.l-2-margin.l;
+	str.l = str.l-2-margin.l;
 	outputByte(e,'"');
 	while (str.l > 0) {
-        int n = newline(str);
-        if (n != 0) {
-            outputString(e, nl);
-            str.p += n+margin.l;
-            str.l -= n+margin.l;
-            continue;
-        }
-        if (str.p[0] < 0x20) {
-            char tmp[256];
+		int n = newline(str);
+		if (n != 0) {
+			outputString(e, nl);
+			str.p += n+margin.l;
+			str.l -= n+margin.l;
+			continue;
+		}
+		if (str.p[0] < 0x20) {
+			char tmp[256];
 			switch (str.p[0]) {
 			case '\b':
 				outputString(e, "\\b");
-                break;
+				break;
 			case '\t':
 				outputString(e, "\\t");
-                break;
+				break;
 			case '\r':
 				outputString(e, "\\r");
-                break;
+				break;
 			case '\f':
 				outputString(e, "\\f");
-                break;
+				break;
 			default:
-                sprintf(tmp, "\\u00%0X", str.p[0]);
+				sprintf(tmp, "\\u00%0X", str.p[0]);
 				outputString(e, tmp);
-                break;
+				break;
 			}
-            str.p++;
-            str.l--;
-            continue;
+			str.p++;
+			str.l--;
+			continue;
 		}
-        if (str.p[0] == '<') {
+		if (str.p[0] == '<') {
 			outputByte(e, '<');
 			if (str.l > 1 && str.p[1] == '/')
 				outputByte(e, '\\');
-            str.p++;
-            str.l--;
-            continue;
+			str.p++;
+			str.l--;
+			continue;
 		}
-        if (str.p[0] == '"') {
+		if (str.p[0] == '"') {
 			outputByte(e, '\\');
 			outputByte(e, '"');
-            str.p++;
-            str.l--;
-            continue;
+			str.p++;
+			str.l--;
+			continue;
 		}
-        if (str.p[0] == '\\') {
+		if (str.p[0] == '\\') {
 			outputByte(e, '\\');
 			outputByte(e, '\\');
-            str.p++;
-            str.l--;
-            continue;
+			str.p++;
+			str.l--;
+			continue;
 		}
 		outputByte(e, str.p[0]);
-        str.p++;
-        str.l--;
+		str.p++;
+		str.l--;
 	}
 	outputByte(e, '"');
 }
@@ -1101,12 +1101,12 @@ void outputMultilineString(engine_t *e) {
 
 typedef struct {
 	enum tokenTag_t tag;
-    int pos; 
-    union {
-        int64_t i;
-        double f;
-        const char* e;
-    } val;
+	int pos; 
+	union {
+		int64_t i;
+		double f;
+		const char* e;
+	} val;
 } numToken_t;
 
 
@@ -1123,9 +1123,9 @@ bool numDone(numEngine_t *e) {
 }
 
 void numPopBytes(numEngine_t *e, int n) {
-    assert(n <= e->p.l);
-    e->p.p += n;
-    e->p.l -= n;
+	assert(n <= e->p.l);
+	e->p.p += n;
+	e->p.l -= n;
 }
 
 enum tokenTag_t tkOpTable[256] = {
@@ -1146,7 +1146,7 @@ bool nextOperator(numEngine_t *e) {
 	enum tokenTag_t x = tkOpTable[(byte)e->p.p[0]];
 	if (x == tagUnknown)
 		return false;
-    e->tk = (numToken_t){x, e->pos, {.i=0}};
+	e->tk = (numToken_t){x, e->pos, {.i=0}};
 	numPopBytes(e, 1);
 	return true;
 }
@@ -1160,22 +1160,22 @@ bool inRange(byte v, byte lo, byte hi) {
 // returns the number of bytes skipped and v trimmed by this number,
 // or -1 and NULL out value if the of v is reached.
 int skipHeaderAndOptionalUnderscore(int n, slice_t v, slice_t *out) {
-    out->p = NULL;
-    out->l = 0;
+	out->p = NULL;
+	out->l = 0;
 	if (n >= v.l) {
 		return -1;
 	}
 	v.p += n;
-    v.l -=n;
+	v.l -=n;
 	if (v.p[0] == '_') {
 		n++;
 		v.p++;
-        v.l--;
+		v.l--;
 		if (v.l == 0) {
 			return -1;
 		}
 	}
-    *out = v;
+	*out = v;
 	return n;
 }
 
@@ -1210,7 +1210,7 @@ int parseBinLiteral(slice_t v) {
 		return 0;
 	int n = skipHeaderAndOptionalUnderscore(2, v, &v);
 	if (n >= 0) {
-        int p = parseBinDigits(v);
+		int p = parseBinDigits(v);
 		if (p > 0)
 			return n + p;
 	}
@@ -1221,7 +1221,7 @@ int parseBinLiteral(slice_t v) {
 int64_t decodeBinLiteral(slice_t v) {
 	uint64_t val = 0;
 	v.p += 2;
-    v.l -= 2;
+	v.l -= 2;
 	for (int p = 0; p < v.l; p++) {
 		if (v.p[p] == '_')
 			continue;
@@ -1243,7 +1243,7 @@ bool nextBinValue(numEngine_t *e) {
 	if (n == 0)
 		return false;
 	if (n < 0) {
-        e->tk = (numToken_t){tagError, e->pos, {.e=ErrInvalidBinaryNumber}};
+		e->tk = (numToken_t){tagError, e->pos, {.e=ErrInvalidBinaryNumber}};
 		return true;
 	}
 	int64_t val = decodeBinLiteral((slice_t){e->p.p, n});
@@ -1251,7 +1251,7 @@ bool nextBinValue(numEngine_t *e) {
 		e->tk = (numToken_t){tagError, e->pos, {.e=ErrNumberOverflow}};
 		return true;
 	}
-    e->tk = (numToken_t){tagIntegerVal,e->pos, {.i=val}};
+	e->tk = (numToken_t){tagIntegerVal,e->pos, {.i=val}};
 	numPopBytes(e, n);
 	return true;
 }
@@ -1286,10 +1286,10 @@ int parseOctLiteral(slice_t v) {
 	if (v.l < 1 || v.p[0] != '0')
 		return 0;
 	if (v.l >= 2 && (v.p[1]&(byte)(0xDF)) == 'O') {
-        int n = skipHeaderAndOptionalUnderscore(2, v, &v);
+		int n = skipHeaderAndOptionalUnderscore(2, v, &v);
 		if (n >= 0) {
-            int p = parseOctDigits(v);
-            if (p > 0)
+			int p = parseOctDigits(v);
+			if (p > 0)
 				return n + p;
 		}
 		return -1;
@@ -1298,9 +1298,9 @@ int parseOctLiteral(slice_t v) {
 	// is not an octal number. It’s thus not invalid.
 	if (v.l < 2 || (v.p[1] != '_' && !isOctDigit(v.p[1])))
 		return 0;
-    int n = skipHeaderAndOptionalUnderscore(1, v, &v);
+	int n = skipHeaderAndOptionalUnderscore(1, v, &v);
 	if (n >= 0) {
-        int p = parseOctDigits(v);
+		int p = parseOctDigits(v);
 		if (p > 0)
 			return n + p;
 	}
@@ -1312,10 +1312,10 @@ int decodeOctLiteral(slice_t v) {
 	uint64_t val = 0;
 	if ((v.p[1]&(byte)(0xDF)) == 'O') {
 		v.p += 2;
-        v.l -= 2;
+		v.l -= 2;
 	} else {
-        v.p++;
-        v.l--;
+		v.p++;
+		v.l--;
 	}
 	for (int p = 0; p < v.l; p++) {
 		if (v.p[p] == '_')
@@ -1444,7 +1444,7 @@ int parseHexLiteral(slice_t v) {
 		return 0;
 	int n = skipHeaderAndOptionalUnderscore(2, v, &v);
 	if (n >= 0) {
-        int p = parseHexDigits(v);
+		int p = parseHexDigits(v);
 		if (p > 0)
 			return n + p;
 	}
@@ -1455,7 +1455,7 @@ int parseHexLiteral(slice_t v) {
 int64_t decodeHexLiteral(slice_t v) {
 	uint64_t val = 0;
 	v.p += 2;
-    v.l -= 2;
+	v.l -= 2;
 	for (int p = 0; p < v.l; p++) {
 		if (v.p[p] == '_')
 			continue;
@@ -1465,7 +1465,7 @@ int64_t decodeHexLiteral(slice_t v) {
 			val = val<<4 | (uint64_t)(v.p[p]-'0');
 			continue;
 		} 
-        val = val<<4 | ((uint64_t)((v.p[p] & (byte)(0xDF))-'A') + 10);
+		val = val<<4 | ((uint64_t)((v.p[p] & (byte)(0xDF))-'A') + 10);
 	}
 	if ((val&0x8000000000000000) != 0)
 		return -1;
@@ -1482,10 +1482,10 @@ bool nextHexValue(numEngine_t *e) {
 	}
 	int64_t val = decodeHexLiteral((slice_t){e->p.p, n});
 	if (val < 0) {
-        e->tk = (numToken_t){tagError,e->pos, {.e=ErrNumberOverflow}};
+		e->tk = (numToken_t){tagError,e->pos, {.e=ErrNumberOverflow}};
 		return true;
 	}
-    e->tk = (numToken_t){tagIntegerVal, e->pos, {.i=val}};
+	e->tk = (numToken_t){tagIntegerVal, e->pos, {.i=val}};
 	numPopBytes(e, n);
 	return true;
 }
@@ -1580,8 +1580,8 @@ double decodeDecLiteral(slice_t v) {
 	memcpy(buf, v.p, v.l);
 	buf[v.l] = '\0';
 	char *eptr;
-    double x = strtod(buf, &eptr);
-    if (x == 0 && errno == ERANGE) 
+	double x = strtod(buf, &eptr);
+	if (x == 0 && errno == ERANGE) 
 		return -1;
 	return x;
 }
@@ -1768,31 +1768,31 @@ void numNextToken(numEngine_t *e) {
 	if (e->tk.tag == tagError)
 		return;
 	while (e->p.l > 0) {
-        int n = whitespace(e->p);
-        if (n == 0)
-            break;
-        numPopBytes(e, n); 
+		int n = whitespace(e->p);
+		if (n == 0)
+			break;
+		numPopBytes(e, n); 
 	}
 	if (e->p.l == 0) {
-        e->tk = (numToken_t){tagError, e->pos, {.e=ErrEndOfInput} };
+		e->tk = (numToken_t){tagError, e->pos, {.e=ErrEndOfInput} };
 		return;
 	}
 	if (!nextOperator(e) && !nextISODateTimeValue(e) && !nextBinValue(e) && !nextHexValue(e) &&
 		!nextDecValue(e) && !nextOctValue(e) && !nextIntValue(e)) {
-            e->tk = (numToken_t){tagError, e->pos, {.e=ErrInvalidNumericExpression}};
+			e->tk = (numToken_t){tagError, e->pos, {.e=ErrInvalidNumericExpression}};
 	}
 }
 
 void numEngineInit(numEngine_t *e, slice_t in) {
-    assert(in.p != NULL);
-    assert(in.l != 0);
-    e->in = in;
-    e->p = in;
-    e->pos = 0;
+	assert(in.p != NULL);
+	assert(in.l != 0);
+	e->in = in;
+	e->p = in;
+	e->pos = 0;
 	e->tk.tag = tagUnknown;
 	e->tk.pos = 0;
 	e->tk.val.i = 0;
-    numNextToken(e);
+	numNextToken(e);
 }
 
 byte precedenceTable[256] = {
@@ -2293,20 +2293,20 @@ bool value(engine_t *e) {
 		return false;
 	case tagDoubleQuotedString:
 		outputDoubleQuotedString(e);
-        break;
+		break;
 	case tagSingleQuotedString:
 		outputSingleQuotedString(e);
-        break;
+		break;
 	case tagMultilineString:
 		outputMultilineString(e);
-        break;
+		break;
 	case tagQuotelessString:
 		val = e->tk.val;
-        str = isLiteralValue(val);
-        if (str != NULL) {
-            outputString(e, str);
-            break;
-        }
+		str = isLiteralValue(val);
+		if (str != NULL) {
+			outputString(e, str);
+			break;
+		}
 		if (isNumberExpr(val)) {
 			numToken_t t = evalNumberExpression(val);
 			if (t.tag == tagError) {
@@ -2319,7 +2319,7 @@ bool value(engine_t *e) {
 		} else {
 			outputQuotelessString(e);
 		}
-        break;
+		break;
 	case tagOpenBrace:
 		startPos = e->tk.pos;
 		nextToken(e);
@@ -2339,7 +2339,7 @@ bool value(engine_t *e) {
 			return true;
 		}
 		e->depth--;
-        break;
+		break;
 	case tagOpenSquare:
 		nextToken(e);
 		if (done(e)) {
@@ -2359,7 +2359,7 @@ bool value(engine_t *e) {
 			return true;
 		}
 		e->depth--;
-        break;
+		break;
 	default:
 		setError(e, ErrSyntaxError);
 		//		e.setError(fmt.Errorf("expected value, got %v", e.tk))
@@ -2375,7 +2375,7 @@ bool values(engine_t *e) {
 	outputByte(e, '[');
 	while (!done(e) && e->tk.tag != tagCloseSquare) {
 		if (notFirst) {
-            outputByte(e, ',');
+			outputByte(e, ',');
 			if (e->tk.tag == tagComma) {
 				nextToken(e);
 				if (done(e)) {
@@ -2396,7 +2396,7 @@ bool values(engine_t *e) {
 			break;
 		}
 	}
-    outputByte(e, ']');
+	outputByte(e, ']');
 	return done(e);
 }
 
@@ -2407,16 +2407,16 @@ bool member(engine_t *e) {
 		return false;
 	case tagDoubleQuotedString:
 		outputDoubleQuotedString(e);
-        break;
+		break;
 	case tagSingleQuotedString:
 		outputSingleQuotedString(e);
-        break;
+		break;
 	case tagQuotelessString:
 		outputQuotelessString(e);
-        break;
+		break;
 	default:
 		setError(e,ErrExpectStringIdentifier);
-        break;
+		break;
 	}
 	nextToken(e);
 	if (done(e)) {
@@ -2428,7 +2428,7 @@ bool member(engine_t *e) {
 		setError(e, ErrExpectColon);
 		return true;
 	}
-    outputByte(e, ':');
+	outputByte(e, ':');
 	nextToken(e);
 	if (done(e)) {
 		if (e->tk.val.p == ErrEndOfInput)
@@ -2441,7 +2441,7 @@ bool member(engine_t *e) {
 // values process 0 or more members (identifiers : value) and pops the ending }. Return done().
 bool members(engine_t *e) {
 	bool notFirst = false;
-    outputByte(e, '{');
+	outputByte(e, '{');
 	while (!done(e) && e->tk.tag != tagCloseBrace) {
 		if (notFirst) {
 			outputByte(e, ',');
@@ -2463,7 +2463,7 @@ bool members(engine_t *e) {
 		if (member(e))
 			break;
 	}
-    outputByte(e, '}');
+	outputByte(e, '}');
 	return done(e);
 }
 
@@ -2484,34 +2484,34 @@ int myStrLen(const char* str) {
 // is an error message. qjson_decode will never return NULL or an
 // empty string.
 char* qjson_decode(const char *qjsonText) {
-    int len = (qjsonText == NULL) ? 0 : myStrLen(qjsonText); // strlen(qjsonText);
+	int len = (qjsonText == NULL) ? 0 : myStrLen(qjsonText); // strlen(qjsonText);
 	if (len == 0 ) {
-        return strcpy(malloc(3), "{}");
+		return strcpy(malloc(3), "{}");
 	}
-    engine_t e;
-    e.in = qjsonText;
-    e.p = (slice_t){e.in, len};
-    outputInit(&e);
-    e.depth = 0;
-    e.pos = (pos_t){0,0,0};
+	engine_t e;
+	e.in = qjsonText;
+	e.p = (slice_t){e.in, len};
+	outputInit(&e);
+	e.depth = 0;
+	e.pos = (pos_t){0,0,0};
 	e.tk.tag = tagUnknown;
 	e.tk.pos = e.pos;
 	e.tk.val.p = NULL;
 	e.tk.val.l = 0;
-    nextToken(&e);
-    members(&e);
+	nextToken(&e);
+	members(&e);
 	if (e.tk.tag == tagCloseBrace)
 		e.tk = (token_t){tagError, e.tk.pos, {ErrSyntaxError, strlen(ErrSyntaxError)}};
-    assert(e.tk.tag == tagError);
-    if (e.tk.val.p == ErrEndOfInput) {
+	assert(e.tk.tag == tagError);
+	if (e.tk.val.p == ErrEndOfInput) {
 		outputByte(&e, '\0');
-        return outputGet(&e);
+		return outputGet(&e);
 	}
-    outputReset(&e);
-    outputString(&e, e.tk.val.p);
-    char buf[256];
-    sprintf(buf, " at line %d col %d", e.tk.pos.l+1, column((slice_t){e.in+e.tk.pos.s, e.tk.pos.b-e.tk.pos.s})+1);
-    outputString(&e, buf);
+	outputReset(&e);
+	outputString(&e, e.tk.val.p);
+	char buf[256];
+	sprintf(buf, " at line %d col %d", e.tk.pos.l+1, column((slice_t){e.in+e.tk.pos.s, e.tk.pos.b-e.tk.pos.s})+1);
+	outputString(&e, buf);
 	outputByte(&e, '\0');
-    return outputGet(&e);
+	return outputGet(&e);
 }
