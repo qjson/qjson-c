@@ -1067,6 +1067,12 @@ void outputMultilineString(engine_t *e) {
 			str.l--;
 			continue;
 		}
+		if (str.p[0] == '`' && str.l > 1 && str.p[1] == '\\') {
+			outputByte(e, '`');
+			str.p += 2;
+			str.l -= 2;
+			continue;
+		}
 		if (str.p[0] == '\\') {
 			outputByte(e, '\\');
 			outputByte(e, '\\');
