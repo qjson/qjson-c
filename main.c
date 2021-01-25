@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h>
+#include <errno.h>
 #include "qjson.h"
 #ifdef __AFL_COMPILER 
 #include <json.h>
@@ -31,52 +32,74 @@ bool argsContain(int argc, char *argv[], const char *val) {
     return false;
 }
 
+char* readFile(const char* fileName) {
+    struct stat st;
+    if (stat(fileName, &st) != 0) {
+        fprintf(stderr, "error: file '%s' not found\n", fileName);
+        exit(1);
+    }
+    if (!S_ISREG(st.st_mode)) {
+        fprintf(stderr, "error: file '%s' is not a regular file\n", fileName);
+         exit(1);
+    }
+    char *text = malloc(st.st_size+1);
+    int fd = open(fileName, O_RDONLY);
+    if (fd < 0) {
+        fprintf(stderr, "error: can’t open file '%s' for reading\n", fileName);
+        exit(1);
+    }
+    long n = read(fd, text, st.st_size);
+    if (n != st.st_size) {
+        fprintf(stderr, "error: failed to read file '%s'\n", fileName);
+        exit(1);
+    }
+    close(fd);
+    text[st.st_size] = '\0';
+    return text;
+}
+
+// read stdIn until EOF
+char* readStdIn() {
+    int fd = fileno(stdin), n, textSize = 0, bufSize = 200*1024;
+    char *buf = malloc(bufSize);
+    while ((n = read(fd, buf+textSize, bufSize-textSize-1))) {
+        if (n < 0) {
+            fprintf(stderr, "error: failed to reading stdin: %s\n", strerror(errno));
+            exit(1);
+        }
+        textSize += n;
+        if (textSize+1 == bufSize) {
+            bufSize *= 2;
+            buf = realloc(buf, bufSize);
+        }
+    }
+    buf[textSize] = '\0';
+    return realloc(buf, textSize+1);
+}
+
+
 
 int main(int argc, char *argv[]) {
-    if (argc == 1) {
+    char* qjsonText = NULL;
+    if (argc > 2) {
         fprintf(stderr, "error: require a file name or an option as argument\n");
         printHelp(stderr);
         return 1;
     }
-
     if (argsContain(argc, argv, "-?") || argsContain(argc, argv, "--help")) {
         printHelp(stdout);
         return 0;
     }
-
     if (argsContain(argc, argv, "-v")) {
         printf("%s\n", qjson_version());
         return 0;
     }
 
-    const char *fileName = argv[1];
-    struct stat st;
-    if (stat(fileName, &st) != 0) {
-        fprintf(stderr, "error: file '%s' not found\n", fileName);
-        return 1;
+    if (argc == 2) {
+        qjsonText = readFile(argv[1]);
+    } else {
+        qjsonText = readStdIn();
     }
-    
-    if (!S_ISREG(st.st_mode)) {
-        fprintf(stderr, "error: file '%s' is not a regular file\n", fileName);
-        return 1;
-    }
-
-    char *qjsonText = malloc(st.st_size+1);
-    int fd = open(fileName, O_RDONLY);
-    if (fd < 0) {
-        fprintf(stderr, "error: can’t open file '%s' for reading\n", fileName);
-        return 1;
-    }
-
-    long n = read(fd, qjsonText, st.st_size);
-    if (n != st.st_size) {
-        fprintf(stderr, "error: failed to read file '%s'\n", fileName);
-        return 1;
-    }
-
-    close(fd);
-
-    qjsonText[st.st_size] = '\0';
 
     char *jsonText = qjson_decode(qjsonText);
     assert(jsonText != NULL && jsonText[0] != '\0');
