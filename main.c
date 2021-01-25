@@ -50,7 +50,10 @@ char* readFile(const char* fileName) {
     }
     long n = read(fd, text, st.st_size);
     if (n != st.st_size) {
-        fprintf(stderr, "error: failed to read file '%s'\n", fileName);
+        if (n < 0) 
+            fprintf(stderr, "error: failed to read file '%s': %s\n", fileName, strerror(errno));
+        else
+            fprintf(stderr, "error: failed to read file '%s'\n", fileName);
         exit(1);
     }
     close(fd);
