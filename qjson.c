@@ -1132,6 +1132,7 @@ void numPopBytes(numEngine_t *e, int n) {
 	assert(n <= e->p.l);
 	e->p.p += n;
 	e->p.l -= n;
+	e->pos += n;
 }
 
 enum tokenTag_t tkOpTable[256] = {
